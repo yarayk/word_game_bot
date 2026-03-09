@@ -3,7 +3,7 @@ import os
 
 def read_version() -> str:
     """Читает версию из файла VERSION.
-    
+
     Returns:
         str: Строка версии из файла VERSION.
     """

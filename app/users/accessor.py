@@ -1,6 +1,6 @@
 class UserAccessor:
     """Аксессор для работы с данными пользователей.
- 
+
     Attributes:
     ----------
     config : dict

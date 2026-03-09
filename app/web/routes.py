@@ -5,7 +5,7 @@ __all__ = ("setup_routes",)
 
 def setup_routes(application: Application):
     """Настраивает маршруты приложения.
-    
+
     Args:
         application: Экземпляр приложения aiohttp.
     """
