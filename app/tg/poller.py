@@ -36,7 +36,7 @@ class Poller:
             try:
                 updates = await self.app.store.tg_client.get_updates(
                     offset=self._offset,
-                    timeout=30,
+                    request_timeout=30,
                 )
                 for update in updates:
                     self._offset = update.update_id + 1
@@ -48,4 +48,4 @@ class Poller:
                 await asyncio.sleep(1)
 
     async def _handle_update(self, update) -> None:
-                await handle_update(update, self.app)
+        await handle_update(update, self.app)
