@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from app.store.database.models import GameStatus
@@ -21,7 +21,7 @@ SKIP_LETTERS = {"ь", "ъ", "й"}
 
 
 class GameService:
-    def __init__(self, app: "Application"):
+    def __init__(self, app: Application):
         self.app = app
 
     @property
@@ -44,10 +44,7 @@ class GameService:
         first_name: str,
         username: str | None,
     ) -> tuple[Game | None, bool]:
-        """
-        Добавляет игрока в игру.
-        Возвращает (game, already_joined).
-        """
+        """Добавляет игрока в игру. Возвращает (game, already_joined)."""
         game = await self.accessor.get_active_game(chat_id)
         if not game or game.status != GameStatus.WAITING:
             return None, False
@@ -56,14 +53,15 @@ class GameService:
         if existing:
             return game, True
 
-        await self.accessor.create_player(game.id, user_id, first_name, username)
+        await self.accessor.create_player(
+            game.id, user_id, first_name, username
+        )
         return game, False
 
-    async def begin_game(self, chat_id: int) -> tuple[Game, Player] | None:
-        """
-        Запускает игру.
-        Возвращает (game, first_player) или None если нельзя начать.
-        """
+    async def begin_game(
+        self, chat_id: int
+    ) -> tuple[Game, Player] | None:
+        """Запускает игру. Возвращает (game, first_player) или None."""
         game = await self.accessor.get_active_game(chat_id)
         if not game or game.status != GameStatus.WAITING:
             return None
@@ -97,10 +95,7 @@ class GameService:
     async def submit_word(
         self, chat_id: int, user_id: int, word: str
     ) -> dict:
-        """
-        Обрабатывает слово от игрока.
-        Возвращает dict с результатом.
-        """
+        """Обрабатывает слово от игрока. Возвращает dict с результатом."""
         game = await self.accessor.get_active_game(chat_id)
 
         if not game or game.status != GameStatus.IN_GAME:
@@ -129,7 +124,7 @@ class GameService:
         game.status = GameStatus.VOTING
         game.pending_word = word
         game.pending_player_id = user_id
-        game.vote_deadline = datetime.now(timezone.utc)
+        game.vote_deadline = datetime.now(datetime.UTC)
         await self.accessor.update_game(game)
 
         player = await self.accessor.get_player(game.id, user_id)
@@ -152,14 +147,13 @@ class GameService:
         if any(v.voter_user_id == voter_id for v in votes):
             return {"ok": False, "reason": "already_voted"}
 
-        await self.accessor.add_vote(game.id, game.pending_word, voter_id, approve)
+        await self.accessor.add_vote(
+            game.id, game.pending_word, voter_id, approve
+        )
         return {"ok": True}
 
     async def resolve_vote(self, chat_id: int) -> dict:
-        """
-        Подводит итог голосования.
-        Вызывается по таймауту.
-        """
+        """Подводит итог голосования. Вызывается по таймауту."""
         game = await self.accessor.get_active_game(chat_id)
         if not game or game.status != GameStatus.VOTING:
             return {"ok": False}
@@ -174,7 +168,9 @@ class GameService:
 
         if accepted:
             # Начисляем очки и добавляем слово
-            player = await self.accessor.get_player(game.id, game.pending_player_id)
+            player = await self.accessor.get_player(
+                game.id, game.pending_player_id
+            )
             player.score += len(game.pending_word)
             await self.accessor.update_player(player)
             await self.accessor.add_used_word(
@@ -183,9 +179,11 @@ class GameService:
             game.current_word = game.pending_word
         else:
             # Слово отклонено — игрок выбывает
-            player = await self.accessor.get_player(game.id, game.pending_player_id)
+            player = await self.accessor.get_player(
+                game.id, game.pending_player_id
+            )
             player.is_active = False
-            player.eliminated_at = datetime.now(timezone.utc)
+            player.eliminated_at = datetime.now(datetime.UTC)
             await self.accessor.update_player(player)
 
         game.pending_word = None
@@ -197,7 +195,9 @@ class GameService:
             return await self._finish_game(game, active_players)
 
         # Переходим к следующему игроку
-        next_player = self._get_next_player(active_players, game.current_player_id)
+        next_player = self._get_next_player(
+            active_players, game.current_player_id
+        )
         game.status = GameStatus.IN_GAME
         game.current_player_id = next_player.user_id
         await self.accessor.update_game(game)
@@ -219,14 +219,16 @@ class GameService:
 
         player = await self.accessor.get_player(game.id, game.current_player_id)
         player.is_active = False
-        player.eliminated_at = datetime.now(timezone.utc)
+        player.eliminated_at = datetime.now(datetime.UTC)
         await self.accessor.update_player(player)
 
         active_players = await self.accessor.get_active_players(game.id)
         if len(active_players) <= 1:
             return await self._finish_game(game, active_players)
 
-        next_player = self._get_next_player(active_players, game.current_player_id)
+        next_player = self._get_next_player(
+            active_players, game.current_player_id
+        )
         game.current_player_id = next_player.user_id
         game.status = GameStatus.IN_GAME
         await self.accessor.update_game(game)
@@ -245,7 +247,7 @@ class GameService:
             return {"ok": False}
 
         game.status = GameStatus.FINISHED
-        game.finished_at = datetime.now(timezone.utc)
+        game.finished_at = datetime.now(datetime.UTC)
         await self.accessor.update_game(game)
 
         scoreboard = await self.accessor.get_scoreboard(game.id)
@@ -253,10 +255,10 @@ class GameService:
 
     # ── Вспомогательные методы ────────────────────────────────────────
 
-    async def _finish_game(self, game: "Game", active_players: list) -> dict:
+    async def _finish_game(self, game: Game, active_players: list) -> dict:
         """Завершает игру."""
         game.status = GameStatus.FINISHED
-        game.finished_at = datetime.now(timezone.utc)
+        game.finished_at = datetime.now(datetime.UTC)
         await self.accessor.update_game(game)
 
         scoreboard = await self.accessor.get_scoreboard(game.id)
@@ -277,7 +279,7 @@ class GameService:
 
     def _get_next_player(
         self, players: list, current_user_id: int
-    ) -> "Player":
+    ) -> Player:
         """Возвращает следующего игрока по кругу."""
         for i, p in enumerate(players):
             if p.user_id == current_user_id:

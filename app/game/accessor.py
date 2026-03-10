@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class GameAccessor:
-    def __init__(self, app: "Application"):
+    def __init__(self, app: Application):
         self.app = app
 
     def get_session(self) -> AsyncSession:
@@ -66,7 +66,7 @@ class GameAccessor:
         async with self.get_session() as session:
             result = await session.execute(
                 select(Player)
-                .where(Player.game_id == game_id, Player.is_active == True)
+                .where(Player.game_id == game_id, Player.is_active)
                 .order_by(Player.turn_order)
             )
             return list(result.scalars().all())
