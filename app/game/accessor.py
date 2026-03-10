@@ -112,11 +112,13 @@ class GameAccessor:
     ) -> None:
         """Добавляет слово в список использованных."""
         async with self.get_session() as session:
-            session.add(UsedWord(
-                game_id=game_id,
-                word=word,
-                player_user_id=player_user_id,
-            ))
+            session.add(
+                UsedWord(
+                    game_id=game_id,
+                    word=word,
+                    player_user_id=player_user_id,
+                )
+            )
             await session.commit()
 
     # ── Голоса ────────────────────────────────────────────────────────
@@ -137,12 +139,14 @@ class GameAccessor:
     ) -> None:
         """Добавляет голос."""
         async with self.get_session() as session:
-            session.add(Vote(
-                game_id=game_id,
-                word=word,
-                voter_user_id=voter_user_id,
-                approve=approve,
-            ))
+            session.add(
+                Vote(
+                    game_id=game_id,
+                    word=word,
+                    voter_user_id=voter_user_id,
+                    approve=approve,
+                )
+            )
             await session.commit()
 
     async def get_scoreboard(self, game_id: int) -> list[Player]:

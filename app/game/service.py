@@ -12,8 +12,16 @@ if TYPE_CHECKING:
     from app.web.app import Application
 
 STARTER_WORDS = [
-    "апельсин", "банан", "дерево", "елка", "жираф",
-    "зебра", "ирис", "кактус", "лимон", "медведь",
+    "апельсин",
+    "банан",
+    "дерево",
+    "елка",
+    "жираф",
+    "зебра",
+    "ирис",
+    "кактус",
+    "лимон",
+    "медведь",
 ]
 
 # Буквы на которые не начинают слова
@@ -58,9 +66,7 @@ class GameService:
         )
         return game, False
 
-    async def begin_game(
-        self, chat_id: int
-    ) -> tuple[Game, Player] | None:
+    async def begin_game(self, chat_id: int) -> tuple[Game, Player] | None:
         """Запускает игру. Возвращает (game, first_player) или None."""
         game = await self.accessor.get_active_game(chat_id)
         if not game or game.status != GameStatus.WAITING:
@@ -92,9 +98,7 @@ class GameService:
 
     # ── Игровой процесс ───────────────────────────────────────────────
 
-    async def submit_word(
-        self, chat_id: int, user_id: int, word: str
-    ) -> dict:
+    async def submit_word(self, chat_id: int, user_id: int, word: str) -> dict:
         """Обрабатывает слово от игрока. Возвращает dict с результатом."""
         game = await self.accessor.get_active_game(chat_id)
 
@@ -277,9 +281,7 @@ class GameService:
                 return ch
         return word[-1]
 
-    def _get_next_player(
-        self, players: list, current_user_id: int
-    ) -> Player:
+    def _get_next_player(self, players: list, current_user_id: int) -> Player:
         """Возвращает следующего игрока по кругу."""
         for i, p in enumerate(players):
             if p.user_id == current_user_id:
