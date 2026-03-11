@@ -32,9 +32,7 @@ class Game(Base):
     __tablename__ = "games"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    chat_id: Mapped[int] = mapped_column(
-        BigInteger, nullable=False, index=True
-    )
+    chat_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
     status: Mapped[GameStatus] = mapped_column(
         Enum(GameStatus), default=GameStatus.WAITING, nullable=False
     )
@@ -66,9 +64,7 @@ class Player(Base):
     __tablename__ = "players"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    game_id: Mapped[int] = mapped_column(
-        ForeignKey("games.id"), nullable=False
-    )
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), nullable=False)
     user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     first_name: Mapped[str] = mapped_column(String(100))
     username: Mapped[str | None] = mapped_column(String(100))
@@ -89,9 +85,7 @@ class UsedWord(Base):
     __tablename__ = "used_words"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    game_id: Mapped[int] = mapped_column(
-        ForeignKey("games.id"), nullable=False
-    )
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), nullable=False)
     word: Mapped[str] = mapped_column(String(100), nullable=False)
     player_user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     used_at: Mapped[datetime] = mapped_column(
@@ -105,9 +99,7 @@ class Vote(Base):
     __tablename__ = "votes"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    game_id: Mapped[int] = mapped_column(
-        ForeignKey("games.id"), nullable=False
-    )
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), nullable=False)
     word: Mapped[str] = mapped_column(String(100), nullable=False)
     voter_user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
     approve: Mapped[bool] = mapped_column(Boolean, nullable=False)

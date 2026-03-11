@@ -251,9 +251,7 @@ class GameService:
         if not game or game.status != GameStatus.IN_GAME:
             return {"ok": False}
 
-        player = await self.accessor.get_player(
-            game.id, game.current_player_id
-        )
+        player = await self.accessor.get_player(game.id, game.current_player_id)
         player.is_active = False
         player.eliminated_at = datetime.now(UTC)
         await self.accessor.update_player(player)

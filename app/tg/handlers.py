@@ -445,9 +445,7 @@ async def _send_vote_result(
         else:
             game = await app.store.game.get_active_game(chat_id)
             players = (
-                await app.store.game.get_active_players(game.id)
-                if game
-                else []
+                await app.store.game.get_active_players(game.id) if game else []
             )
             names = ", ".join(p.first_name for p in players) or "—"
             verdict = (
@@ -497,8 +495,6 @@ def _format_scoreboard(players) -> str:
 
     for i, player in enumerate(players):
         medal = medals[i] if i < 3 else f"{i + 1}."
-        lines.append(
-            f"{medal} {player.first_name} — {int(player.score)} очков"
-        )
+        lines.append(f"{medal} {player.first_name} — {int(player.score)} очков")
 
     return "\n".join(lines)

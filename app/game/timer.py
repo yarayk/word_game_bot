@@ -231,8 +231,6 @@ def _format_scoreboard(players) -> str:
 
     for i, player in enumerate(players):
         medal = medals[i] if i < 3 else f"{i + 1}."
-        lines.append(
-            f"{medal} {player.first_name} — {int(player.score)} очков"
-        )
+        lines.append(f"{medal} {player.first_name} — {int(player.score)} очков")
 
     return "\n".join(lines)
