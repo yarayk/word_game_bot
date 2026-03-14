@@ -34,8 +34,10 @@ def setup_app(config_path: str) -> Application:
 async def _on_startup(application: Application) -> None:
     await application.store.database.connect()
     await application.store.poller.start()
+    await application.store.timer.restore_timers()
 
 
 async def _on_cleanup(application: Application) -> None:
+    application.store.timer.stop()
     await application.store.poller.stop()
     await application.store.database.disconnect()

@@ -1,0 +1,18 @@
+debug: false
+web:
+  host: 127.0.0.1
+  port: 8000
+
+sentry:
+  dsn:
+  env: dev
+
+bot:
+  token: "<your telegram bot token>"
+
+store:
+  database_url: "postgresql+asyncpg://user:password@localhost/dbname"
+
+game:
+  turn_timeout: 60
+  vote_timeout: 30

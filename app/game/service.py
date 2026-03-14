@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import re
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from app.store.database.models import GameStatus
@@ -35,6 +35,14 @@ class GameService:
     @property
     def accessor(self):
         return self.app.store.game
+
+    @property
+    def _turn_timeout(self) -> int:
+        return self.app.config.get("game", {}).get("turn_timeout", 60)
+
+    @property
+    def _vote_timeout(self) -> int:
+        return self.app.config.get("game", {}).get("vote_timeout", 30)
 
     # ── Команды ───────────────────────────────────────────────────────
 
@@ -92,6 +100,9 @@ class GameService:
         game.status = GameStatus.IN_GAME
         game.current_word = first_word
         game.current_player_id = players[0].user_id
+        game.turn_deadline = datetime.now(UTC) + timedelta(
+            seconds=self._turn_timeout
+        )
         game = await self.accessor.update_game(game)
 
         return game, players[0]
@@ -128,7 +139,9 @@ class GameService:
         game.status = GameStatus.VOTING
         game.pending_word = word
         game.pending_player_id = user_id
-        game.vote_deadline = datetime.now(datetime.UTC)
+        game.vote_deadline = datetime.now(UTC) + timedelta(
+            seconds=self._vote_timeout
+        )
         await self.accessor.update_game(game)
 
         player = await self.accessor.get_player(game.id, user_id)
@@ -187,7 +200,7 @@ class GameService:
                 game.id, game.pending_player_id
             )
             player.is_active = False
-            player.eliminated_at = datetime.now(datetime.UTC)
+            player.eliminated_at = datetime.now(UTC)
             await self.accessor.update_player(player)
 
         game.pending_word = None
@@ -204,6 +217,9 @@ class GameService:
         )
         game.status = GameStatus.IN_GAME
         game.current_player_id = next_player.user_id
+        game.turn_deadline = datetime.now(UTC) + timedelta(
+            seconds=self._turn_timeout
+        )
         await self.accessor.update_game(game)
 
         return {
@@ -223,7 +239,7 @@ class GameService:
 
         player = await self.accessor.get_player(game.id, game.current_player_id)
         player.is_active = False
-        player.eliminated_at = datetime.now(datetime.UTC)
+        player.eliminated_at = datetime.now(UTC)
         await self.accessor.update_player(player)
 
         active_players = await self.accessor.get_active_players(game.id)
@@ -235,6 +251,9 @@ class GameService:
         )
         game.current_player_id = next_player.user_id
         game.status = GameStatus.IN_GAME
+        game.turn_deadline = datetime.now(UTC) + timedelta(
+            seconds=self._turn_timeout
+        )
         await self.accessor.update_game(game)
 
         return {
@@ -251,7 +270,7 @@ class GameService:
             return {"ok": False}
 
         game.status = GameStatus.FINISHED
-        game.finished_at = datetime.now(datetime.UTC)
+        game.finished_at = datetime.now(UTC)
         await self.accessor.update_game(game)
 
         scoreboard = await self.accessor.get_scoreboard(game.id)
@@ -262,7 +281,7 @@ class GameService:
     async def _finish_game(self, game: Game, active_players: list) -> dict:
         """Завершает игру."""
         game.status = GameStatus.FINISHED
-        game.finished_at = datetime.now(datetime.UTC)
+        game.finished_at = datetime.now(UTC)
         await self.accessor.update_game(game)
 
         scoreboard = await self.accessor.get_scoreboard(game.id)

@@ -20,6 +20,14 @@ class GameAccessor:
 
     # ── Игры ──────────────────────────────────────────────────────────
 
+    async def get_all_active_games(self) -> list[Game]:
+        """Возвращает все незавершённые игры (по всем чатам)."""
+        async with self.get_session() as session:
+            result = await session.execute(
+                select(Game).where(Game.status != GameStatus.FINISHED)
+            )
+            return list(result.scalars().all())
+
     async def get_active_game(self, chat_id: int) -> Game | None:
         """Возвращает активную игру в чате (не завершённую)."""
         async with self.get_session() as session:

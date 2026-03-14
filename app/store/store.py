@@ -10,6 +10,7 @@ class Store:
     def __init__(self, app: Application):
         from app.game.accessor import GameAccessor
         from app.game.service import GameService
+        from app.game.timer import TimerManager
         from app.store.database.database import Database
         from app.tg.client import TgClient
         from app.tg.poller import Poller
@@ -21,3 +22,4 @@ class Store:
         self.database = Database(app)
         self.game = GameAccessor(app)
         self.game_service = GameService(app)
+        self.timer = TimerManager(app)

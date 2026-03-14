@@ -106,3 +106,12 @@ class Vote(Base):
     )
 
     game: Mapped[Game] = relationship(back_populates="votes")
+
+
+class BotState(Base):
+    """Singleton-строка (id=1) для хранения состояния бота между рестартами."""
+
+    __tablename__ = "bot_state"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
+    tg_offset: Mapped[int] = mapped_column(BigInteger, default=0)
