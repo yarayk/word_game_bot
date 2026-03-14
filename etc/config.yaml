@@ -7,4 +7,7 @@ sentry:
   dsn:
   env: dev
 
+bot:
+  token: "8692447428:AAFwAHfh-_3xtmQltgoCNQawRk9yK_OuKiU"
+
 store: {}

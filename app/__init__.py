@@ -1,11 +1,9 @@
-import os
+"""Пакет приложения word game.
 
+Этот пакет предоставляет основные компоненты приложения word game,
+включая конфигурацию, версии и точки входа.
+"""
 
-def read_version():
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(current_dir, "..", "VERSION")) as f:
-        return f.read().strip()
+from .version import __appname__, __version__
 
-
-__appname__ = "kts_backend"
-__version__ = read_version()
+__all__ = ["__appname__", "__version__"]
