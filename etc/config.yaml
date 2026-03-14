@@ -10,4 +10,7 @@ sentry:
 bot:
   token: "8692447428:AAFwAHfh-_3xtmQltgoCNQawRk9yK_OuKiU"
 
-store: {}
+store:
+  database_url: "postgresql+asyncpg://postgres:SDRvr123@localhost/wordsbot"
+
+

@@ -33,10 +33,12 @@ class TgClient:
             await self._session.close()
         logger.info("TgClient stopped")
 
-    async def get_updates(self, offset: int = 0) -> list[Update]:
+    async def get_updates(
+        self, offset: int = 0, request_timeout: int = 30
+    ) -> list[Update]:
         async with self._session.get(
             f"{self.api_url}/getUpdates",
-            params={"offset": offset, "timeout": 30},
+            params={"offset": offset, "timeout": request_timeout},
         ) as resp:
             data = await resp.json()
             if not data.get("ok"):
@@ -51,4 +53,4 @@ class TgClient:
         ) as resp:
             data = await resp.json()
             if not data.get("ok"):
-                logger.error("sendMessage failed: %s", data)
+                logger.error("sendMessageд failed: %s", data)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -5,9 +7,8 @@ if TYPE_CHECKING:
 
 
 class Store:
-    """Основной класс хранилища для управления доступом к данным."""
-
-    def __init__(self, app: "Application"):
+    def __init__(self, app: Application):
+        from app.store.database.database import Database
         from app.tg.client import TgClient
         from app.tg.poller import Poller
         from app.users.accessor import UserAccessor
@@ -15,3 +16,4 @@ class Store:
         self.user = UserAccessor(self)
         self.tg_client = TgClient(app)
         self.poller = Poller(app)
+        self.database = Database(app)
