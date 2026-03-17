@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import asdict
 from pathlib import Path
 
+import aiohttp
 from aiohttp import web
 
 from app.admin.schema import (
@@ -12,6 +14,8 @@ from app.admin.schema import (
     StatsSchema,
     TopPlayerSchema,
 )
+
+logger = logging.getLogger(__name__)
 
 _TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
 _ADMIN_STOP_MSG = (
@@ -153,7 +157,8 @@ class BroadcastView(web.View):
                     chat_id=chat_id, text=text
                 )
                 sent += 1
-            except Exception:  # noqa: BLE001
+            except aiohttp.ClientError as err:
+                logger.warning("Broadcast failed for chat %d: %s", chat_id, err)
                 failed += 1
 
         return web.json_response({"ok": True, "sent": sent, "failed": failed})

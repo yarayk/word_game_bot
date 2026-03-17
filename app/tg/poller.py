@@ -4,6 +4,8 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
+import aiohttp
+
 from app.store.database.models import BotState
 from app.tg.handlers import handle_update
 
@@ -78,8 +80,10 @@ class Poller:
                                 update.message.chat.id,
                                 "⚠️ Что-то пошло не так. Попробуй ещё раз.",
                             )
-                        except Exception:  # noqa: BLE001, S110
-                            pass
+                        except aiohttp.ClientError as send_err:
+                            logger.warning(
+                                "Failed to send error message: %s", send_err
+                            )
 
     async def _handle_update(self, update) -> None:
         await handle_update(update, self.app)
