@@ -163,6 +163,11 @@ class GameService:
         if game.pending_player_id == voter_id:
             return {"ok": False, "reason": "own_word"}
 
+        # Проверяем что голосующий — активный участник игры
+        voter = await self.accessor.get_player(game.id, voter_id)
+        if not voter or not voter.is_active:
+            return {"ok": False, "reason": "not_participant"}
+
         # Проверяем что ещё не голосовал
         votes = await self.accessor.get_votes(game.id, game.pending_word)
         if any(v.voter_user_id == voter_id for v in votes):

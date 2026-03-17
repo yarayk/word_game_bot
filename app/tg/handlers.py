@@ -73,18 +73,56 @@ async def _handle_message(message, app: Application) -> None:
     if text is None:
         return
 
+    if message.chat.type == "private" and text.startswith("/"):
+        await app.store.tg_client.send_message(
+            chat_id,
+            "❌ Игра доступна только в групповых чатах. Добавь меня в группу!",
+        )
+        return
+
+    await _route_command(chat_id, user_id, first_name, username, text, app)
+
+
+async def _route_command(
+    chat_id: int,
+    user_id: int,
+    first_name: str,
+    username: str | None,
+    text: str,
+    app: Application,
+) -> None:
     if text.startswith("/start_game"):
         await handle_start_game(chat_id, app)
     elif text.startswith("/join"):
         await handle_join(chat_id, user_id, first_name, username, app)
     elif text.startswith("/begin"):
-        await handle_begin(chat_id, app)
+        await handle_begin(chat_id, user_id, app)
     elif text.startswith("/stop_game"):
         await handle_stop_game(chat_id, app)
     elif text.startswith("/game_info"):
         await handle_game_info(chat_id, app)
+    elif text.startswith("/help"):
+        await handle_help(chat_id, app)
     elif not text.startswith("/"):
         await handle_word(chat_id, user_id, text, app)
+
+
+async def handle_help(chat_id: int, app: Application) -> None:
+    await app.store.tg_client.send_message(
+        chat_id,
+        "📖 Правила игры в Слова:\n"
+        "Игроки по очереди называют слова. Каждое следующее слово должно "
+        "начинаться на последнюю букву предыдущего. Другие игроки голосуют "
+        "— существует ли названное слово. Кто не успел назвать слово или "
+        "назвал несуществующее — выбывает. Побеждает последний оставшийся!\n\n"
+        "📋 Команды:\n"
+        "/start_game — начать новую игру\n"
+        "/join — присоединиться к игре\n"
+        "/begin — запустить игру (нужно ≥ 2 игрока)\n"
+        "/stop_game — досрочно завершить игру\n"
+        "/game_info — информация о текущей игре\n"
+        "/help — показать эту справку",
+    )
 
 
 async def handle_bot_added(chat_id: int, app: Application) -> None:
@@ -101,7 +139,8 @@ async def handle_bot_added(chat_id: int, app: Application) -> None:
         "/join — присоединиться к игре\n"
         "/begin — запустить игру (нужно ≥ 2 игрока)\n"
         "/stop_game — досрочно завершить игру\n"
-        "/game_info — информация о текущей игре",
+        "/game_info — информация о текущей игре\n"
+        "/help — показать эту справку",
     )
 
 
@@ -162,13 +201,21 @@ async def handle_join(
         )
 
 
-async def handle_begin(chat_id: int, app: Application) -> None:
+async def handle_begin(chat_id: int, user_id: int, app: Application) -> None:
     game = await app.store.game.get_active_game(chat_id)
     if game is None:
         await app.store.tg_client.send_message(
             chat_id,
             "Нельзя начать игру. "
             "Нужно минимум 2 игрока и открытая игра (/start_game).",
+        )
+        return
+
+    player = await app.store.game.get_player(game.id, user_id)
+    if player is None:
+        await app.store.tg_client.send_message(
+            chat_id,
+            "❌ Только участники игры могут её начать. Сначала нажми /join.",
         )
         return
 
@@ -234,6 +281,16 @@ async def handle_lobby_callback(
             await app.store.tg_client.answer_callback_query(
                 callback_query.id,
                 text="Нет открытой игры.",
+                show_alert=True,
+            )
+            return
+
+        requester_id = callback_query.from_.id
+        requester = await app.store.game.get_player(game.id, requester_id)
+        if requester is None:
+            await app.store.tg_client.answer_callback_query(
+                callback_query.id,
+                text="Только участники игры могут её начать.",
                 show_alert=True,
             )
             return
@@ -309,6 +366,17 @@ async def handle_word(
         reason = result["reason"]
 
         if reason == "not_your_turn":
+            game = await app.store.game.get_active_game(chat_id)
+            if game and game.status == GameStatus.IN_GAME:
+                player = await app.store.game.get_player(game.id, user_id)
+                if player and player.is_active:
+                    current = await app.store.game.get_player(
+                        game.id, game.current_player_id
+                    )
+                    name = current.first_name if current else "другой игрок"
+                    await app.store.tg_client.send_message(
+                        chat_id, f"⏳ Сейчас ходит {name}."
+                    )
             return
 
         if reason == "wrong_letter":
@@ -364,6 +432,8 @@ async def handle_vote_callback(
             alert = "Нельзя голосовать за своё слово."
         elif reason == "already_voted":
             alert = "Ты уже проголосовал."
+        elif reason == "not_participant":
+            alert = "Ты не участвуешь в этой игре."
         else:
             alert = None
         await app.store.tg_client.answer_callback_query(
