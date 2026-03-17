@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Слова — Admin API</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0f14;color:#e2e8f0;font-family:'JetBrains Mono',monospace;min-height:100vh;padding:32px}
+h1{font-size:1.5rem;font-weight:700;color:#4f8ef7;margin-bottom:8px}
+.subtitle{color:#64748b;font-size:.8rem;margin-bottom:32px}
+.endpoints{display:flex;flex-direction:column;gap:12px}
+.endpoint{background:#151820;border:1px solid #1e2433;border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;transition:border-color .15s}
+.endpoint:hover{border-color:#4f8ef7}
+.method{font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:4px;min-width:48px;text-align:center}
+.get{background:#1a3a5c;color:#4f8ef7}
+.post{background:#1a3a2a;color:#3ecf8e}
+.path{font-size:.9rem;font-weight:600;color:#e2e8f0;flex:1}
+.desc{font-size:.75rem;color:#64748b}
+</style>
+</head>
+<body>
+<h1>🎮 Слова — Admin API</h1>
+<p class="subtitle">Все доступные эндпоинты</p>
+<div class="endpoints">
+  <a class="endpoint" href="/stats"><span class="method get">GET</span><span class="path">/stats</span><span class="desc">Страница статистики</span></a>
+  <a class="endpoint" href="/api/admin/games"><span class="method get">GET</span><span class="path">/api/admin/games</span><span class="desc">Список всех игр (с пагинацией: ?page=1&amp;per_page=20)</span></a>
+  <a class="endpoint" href="/api/admin/games/1"><span class="method get">GET</span><span class="path">/api/admin/games/{id}</span><span class="desc">Детали игры: игроки и использованные слова</span></a>
+  <a class="endpoint" href="/api/admin/stats"><span class="method get">GET</span><span class="path">/api/admin/stats</span><span class="desc">Глобальная статистика (JSON)</span></a>
+  <div class="endpoint"><span class="method post">POST</span><span class="path">/api/admin/games/{id}/stop</span><span class="desc">Принудительно остановить игру</span></div>
+</div>
+</body>
+</html>

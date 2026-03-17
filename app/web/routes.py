@@ -4,6 +4,13 @@ __all__ = ("setup_routes",)
 
 
 def setup_routes(application: Application):
+    """Настраивает маршруты приложения.
+
+    Args:
+        application: Экземпляр приложения aiohttp.
+    """
+    import app.admin.routes
     import app.users.routes
 
     app.users.routes.register_urls(application)
+    app.admin.routes.register_urls(application)

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Слова — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0f14;color:#e2e8f0;font-family:'JetBrains Mono',monospace;min-height:100vh;padding:32px}
+h1{font-size:1.5rem;font-weight:700;color:#4f8ef7;margin-bottom:8px}
+.subtitle{color:#64748b;font-size:.8rem;margin-bottom:32px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:40px}
+.card{background:#151820;border:1px solid #1e2433;border-radius:8px;padding:20px}
+.card-label{font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.card-value{font-size:2rem;font-weight:700;color:#e2e8f0}
+.card-value.accent{color:#4f8ef7}
+.card-value.green{color:#3ecf8e}
+h2{font-size:1rem;font-weight:600;color:#e2e8f0;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;background:#151820;border:1px solid #1e2433;border-radius:8px;overflow:hidden}
+thead{background:#1e2433}
+th{padding:12px 16px;text-align:left;font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+td{padding:12px 16px;font-size:.85rem;border-top:1px solid #1e2433}
+tr:hover td{background:#1a1f2e}
+.rank{color:#4f8ef7;font-weight:700;width:40px}
+.score{color:#3ecf8e;font-weight:600}
+.username{color:#64748b}
+.error{color:#f87171;font-size:.85rem;margin-top:16px}
+.loading{color:#64748b;font-size:.85rem}
+</style>
+</head>
+<body>
+<h1>🎮 Слова — Dashboard</h1>
+<p class="subtitle">Статистика обновляется при загрузке страницы</p>
+<div class="cards">
+  <div class="card"><div class="card-label">Всего игр</div><div class="card-value accent" id="total_games">—</div></div>
+  <div class="card"><div class="card-label">Завершённых</div><div class="card-value" id="finished_games">—</div></div>
+  <div class="card"><div class="card-label">Активных</div><div class="card-value green" id="active_games">—</div></div>
+  <div class="card"><div class="card-label">Слов сыграно</div><div class="card-value" id="total_words">—</div></div>
+</div>
+<h2>Топ-10 игроков</h2>
+<div id="table_wrap"><p class="loading">Загрузка...</p></div>
+<script>
+fetch('/api/admin/stats')
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('total_games').textContent = d.total_games;
+    document.getElementById('finished_games').textContent = d.finished_games;
+    document.getElementById('active_games').textContent = d.active_games;
+    document.getElementById('total_words').textContent = d.total_words;
+    if (!d.top_players.length) {
+      document.getElementById('table_wrap').innerHTML = '<p class="loading">Нет данных</p>';
+      return;
+    }
+    const rows = d.top_players.map((p, i) =>
+      `<tr><td class="rank">${i + 1}</td><td>${p.first_name}</td><td class="username">${p.user_id}</td><td class="score">${Math.round(p.total_score)}</td></tr>`
+    ).join('');
+    document.getElementById('table_wrap').innerHTML =
+      `<table><thead><tr><th>#</th><th>Имя</th><th>User ID</th><th>Очки</th></tr></thead><tbody>${rows}</tbody></table>`;
+  })
+  .catch(() => {
+    document.getElementById('table_wrap').innerHTML = '<p class="error">Ошибка загрузки данных</p>';
+  });
+</script>
+</body>
+</html>

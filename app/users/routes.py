@@ -4,4 +4,8 @@ __all__ = ("register_urls",)
 
 
 def register_urls(application: Application):
-    pass
+    """Регистрирует URL-адреса, связанные с пользователями, в приложении.
+
+    Args:
+        application: Экземпляр приложения aiohttp.
+    """
